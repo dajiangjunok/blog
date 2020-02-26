@@ -1,0 +1,46 @@
+{{extend './_layouts/home.html'}}
+
+{{block 'title'}}
+{{'多人博客 - 首页'}}
+{{/block}}
+
+{{block 'body'}}
+<section class="container">
+  <ul class="media-list">
+    {{each topics}}
+    <li class="media">
+      <div class="media-left">
+        <a href="javascript:;">
+          <img width="40" height="40" class="media-object" src="{{$value.userPath}}" alt="...">
+        </a>
+      </div>
+      <div class="media-body">
+        <h4 class="media-heading"><a href='/topics/show?id={{$value._id}}'>{{$value.title}}</a></h4>
+        <p> 作者：{{$value.nickname}} ---------- 发起时间• {{time[$index]}} </p>
+      </div>
+    </li>
+    {{/each}}
+  </ul>
+  <nav aria-label="Page navigation">
+    <ul class="pagination">
+      <li id="prev">
+        <a href="/?page=prev" aria-label="Previous">
+          <span aria-hidden="true">上一页
+          </span>
+        </a>
+      </li>
+      <li><a href="/?page=1">1</a></li>
+      <li><a href="/?page=2">2</a></li>
+      <li><a href="/?page=3">3</a></li>
+      <li><a href="/?page=4">4</a></li>
+      <li><a href="/?page=5">5</a></li>
+      <li id="next">
+        <a href="/?page=next" aria-label="Next">
+          <span aria-hidden="true">下一页
+          </span>
+        </a>
+      </li>
+    </ul>
+  </nav>
+</section>
+{{/block}}

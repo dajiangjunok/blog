@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>{{block 'title'}}默认标题{{/block}}</title>
+  <link rel="stylesheet" href="/node_modules/bootstrap/dist/css/bootstrap.min.css">
+  <style>
+    .navbar {
+      position: fixed !important;
+      z-index: 999999999999999 !important;
+      top: 0 !important;
+      right: 0 !important;
+      left: 0 !important;
+    }
+  </style>
+  {{block 'head'}}{{/block}}
+</head>
+
+<body>
+  {{include '../_partials/header.html'}}
+  {{block 'body'}}{{/block}}
+  {{include '../_partials/footer.html'}}
+  <script src="/node_modules/jquery/dist/jquery.min.js"></script>
+  <script src="/node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+  {{block 'script'}}{{/block}}
+</body>
+
+</html>

@@ -1,0 +1,236 @@
+{{extend '../_layouts/home.html'}}
+
+{{block 'title'}}{{'多人博客 - 用户设置'}}{{/block}}
+
+{{block 'body'}}
+<section class="container">
+  {{include '../_partials/settings-nav.html'}}
+  <div class="col-md-5">
+    <form id="fileinfo">
+      <div class="form-group">
+        <label for="exampleInputEmail1">账号</label>
+        <p class="form-control-static">{{ email }}</p>
+      </div>
+      <div class="form-group">
+        <label for="exampleInputPassword1">昵称</label>
+        <input type="text" class="form-control" id="nickname" name="nickname" value="{{ nickname }}">
+      </div>
+      <div class="form-group">
+        <label for="exampleInputPassword1">介绍</label>
+        <textarea class="form-control" rows="3" id="bio" name="bio">{{ bio }}</textarea>
+      </div>
+      <div class="form-group">
+        <label for="exampleInputPassword1">性别</label>
+        <div>
+          {{if gender==1}}
+          <label class="radio-inline">
+            <input type="radio" name="gender" id="inlineRadio1" value=1 checked> 男
+          </label>
+          <label class="radio-inline">
+            <input type="radio" name="gender" id="inlineRadio2" value=2> 女
+          </label>
+          <label class="radio-inline">
+            <input type="radio" name="gender" id="inlineRadio3" value=0> 保密
+          </label>
+          {{else if  gender==2}}
+          <label class="radio-inline">
+            <input type="radio" name="gender" id="inlineRadio1" value=1> 男
+          </label>
+          <label class="radio-inline">
+            <input type="radio" name="gender" id="inlineRadio2" value=2 checked> 女
+          </label>
+          <label class="radio-inline">
+            <input type="radio" name="gender" id="inlineRadio3" value=0> 保密
+          </label>
+          {{else if  gender==0}}
+          <label class="radio-inline">
+            <input type="radio" name="gender" id="inlineRadio1" value=1> 男
+          </label>
+          <label class="radio-inline">
+            <input type="radio" name="gender" id="inlineRadio2" value=2> 女
+          </label>
+          <label class="radio-inline">
+            <input type="radio" name="gender" id="inlineRadio3" value=0 checked> 保密
+          </label>
+          {{/if}}
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="exampleInputPassword1">生日</label>
+        <input type="date" class="form-control" name='birthday' id="exampleInputPassword1" value="{{birthday}}">
+      </div>
+      <button type="submit" class="btn btn-success" id="save">保存</button>
+    </form>
+  </div>
+  <div class="col-md-2 profile-avatar">
+    <dl>
+      <dt>头像设置</dt>
+      <dd>
+        <img id="preview" class="avatar" width="150" height="150" src="{{ userPath }}" alt="">
+        <div>
+          <form action="" method="post" enctype="multipart/form-data" id="form">
+            <input type='file' name='file' id="upload">
+            <button id="updataPic" class="btn btn-default">Upload new picture</button>
+          </form>
+        </div>
+      </dd>
+    </dl>
+  </div>
+</section>
+{{/block}}
+
+
+{{block 'script'}}
+<script>
+  $('#upload').change(function () {
+    // console.log(document.getElementById('upload').files[0])
+    submitPic()
+  })
+
+  $('#updataPic').on('click', (ev) => {
+    ev = ev || event
+    ev.preventDefault()
+    // 判断  有没有点击换掉新头像
+    // console.log(form.get('file'));
+    // console.log(123);
+    alert('请更换头像后再保存...')
+  })
+
+  $('#save').on('click', function (ev) {
+    ev = ev || event
+    ev.preventDefault()
+    const formData = new FormData($("#fileinfo")[0]);
+
+    $.ajax({
+      dataType: "json",
+      type: "post", // 提交方式 get/post
+      url: '/settings/profile', // 需要提交的 url
+      data: formData,
+      processData: false,
+      contentType: false,
+      success: function (data) {
+        if (data.err_code == 0) {
+          alert('保存失败...')
+        } else {
+          alert('保存成功...')
+          window.location.href = '/settings/profile'
+        }
+      }
+    })
+  })
+
+  // 压缩图片----------------------------------------------------------------------------------
+
+  function submitPic() {
+    var fileObj = document.getElementById('upload').files[0];
+    var form = new FormData();
+    form.delete('file')
+    //上传图片大于1M进行压缩
+    // if (fileObj.size / 1024 > 1025) {
+    photoCompress(fileObj, {
+      quality: 0.2
+    }, function (base64Codes) {
+      var bl = convertBase64UrlToBlob(base64Codes);
+      form.append("file", bl); // 文件对象
+
+      //上传
+      $('#updataPic').off()
+      $('#updataPic').on('click', (ev) => {
+        ev = ev || event
+        ev.preventDefault()
+        $.ajax({
+          url: '/settings/profile/updateimg',
+          type: 'post',
+          data: form, // 上传formdata封装的数据
+          dataType: 'json',
+          cache: false, // 不缓存
+          processData: false, // jQuery不要去处理发送的数据
+          contentType: false, // jQuery不要去设置Content-Type请求头
+          success: function (data) { //成功回调
+            if (data.err_code === 1) {
+              alert('头像上传成功...')
+            } else if (ata.err_code === 0) {
+              alert('上传失败')
+            } else if (data.err_code === 2) {}
+          }
+        })
+      })
+    })
+    // } else {
+    //   form.append("file", fileObj);
+    //   //上传
+    //   $.ajax({})
+    // }
+  }
+  /**
+   * @param file: 上传的图片
+   * @param objCompressed：压缩后的图片规格
+   * @param objDiv：容器或回调函数
+   */
+  function photoCompress(file, objCompressed, objDiv) {
+    var ready = new FileReader();
+    ready.readAsDataURL(file);
+    ready.onload = function () {
+      var fileResult = this.result;
+      canvasDataURL(fileResult, objCompressed, objDiv)
+    }
+  }
+
+  function canvasDataURL(path, objCompressed, callback) {
+    var img = new Image();
+    img.src = path;
+    img.onload = function () {
+      var that = this;
+      //默认压缩后图片规格
+      var quality = 0.5;
+      // var w = that.width;
+      var w = 150;
+      // var h = that.height;
+      var h = 150;
+      var scale = w / h;
+
+      //实际要求
+      w = objCompressed.width || w;
+      h = objCompressed.height || (w / scale);
+      if (objCompressed.quality && objCompressed.quality > 0 && objCompressed.quality <= 1) {
+        quality = objCompressed.quality;
+      }
+      //生成canvas
+
+      var canvas = document.createElement('canvas');
+
+      $('canvas').remove()
+      $('#preview').after(canvas)
+      $('#preview').hide()
+      // document.querySelector('#canvas').appendChild(canvas)
+      var ctx = canvas.getContext('2d');
+      // 创建属性节点
+      var anw = document.createAttribute("width");
+      anw.nodeValue = w;
+      var anh = document.createAttribute("height");
+      anh.nodeValue = h;
+      canvas.setAttributeNode(anw);
+      canvas.setAttributeNode(anh);
+      ctx.drawImage(that, 0, 0, w, h);
+
+      var base64 = canvas.toDataURL('image/jpeg', quality);
+      // 回调函数返回base64的值
+      callback(base64);
+    }
+  }
+
+  function convertBase64UrlToBlob(urlData) {
+    var arr = urlData.split(','),
+      mime = arr[0].match(/:(.*?);/)[1],
+      bstr = atob(arr[1]),
+      n = bstr.length,
+      u8arr = new Uint8Array(n);
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new Blob([u8arr], {
+      type: mime
+    });
+  }
+</script>
+{{/block}}
