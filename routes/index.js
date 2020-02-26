@@ -64,11 +64,11 @@ router.post('/login', (req, res) => {
     password: md5(md5(req.body.password))
   }, (err, user) => {
     if (req.body.checked && user) {
+      // 当勾选记住  时候  通过session  保存好账号，下次进入登录页面直接渲染
       req.session.historyUser = {
         email: user.email,
         checked: req.body.checked
       }
-
     } else if (!req.body.checked) {
       req.session.historyUser = null
     }
@@ -92,7 +92,7 @@ router.post('/login', (req, res) => {
     }
   })
 })
-// 开始登录---------------------------------
+
 // 访问注册界面------------------------------
 router.get('/register', (req, res) => {
   res.render('register.html')
@@ -204,7 +204,6 @@ router.post('/settings/profile/updateimg', (req, res) => {
       message: 'ok'
     })
   }
-
 })
 //  基本信息设置-----------------------------------
 router.post('/settings/profile', (req, res) => {
